@@ -2,26 +2,32 @@ import ThemedText from "../../components/ThemedText";
 import ThemedView from "../../components/ThemedView";
 import { Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCrocos } from "../../hooks/UseCrocos";
 import Pagination from "../Pagination/Pagination";
+
 
 export default function Crocodiles() {
     const router = useRouter();
     const { croco, getCrocodiles } = useCrocos();
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(2);
     const itemsPerPage = 9;
 
     useEffect(() => {
         getCrocodiles();
     }, [])
 
-    const paginatedData = croco.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const totalPages = useMemo(() => {
+        return Math.max(1, Math.ceil(croco.length / itemsPerPage));
+    }, [croco.length]);
+
+    const paginatedData = useMemo(() => {
+        return croco.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+    }, [croco, currentPage]);
 
     const handlePress = (item) => {
         router.push(`/crocodiles/${item.$id}`);

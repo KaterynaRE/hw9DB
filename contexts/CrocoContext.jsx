@@ -20,13 +20,15 @@ const CrocoProvider = ({ children }) => {
                 databaseId: DATABASE_ID,
                 tableId: TABLE_ID,
                 rowId: ID.unique(),
-                data: { ...data },
+                data: { ...data, userId: user.$id },
                 permissions: [
                     Permission.read(Role.any()),
-                    Permission.update(Role.user(data.userId || "")),
-                    Permission.delete(Role.user(data.userId || "")),
+                    Permission.update(Role.user(user.$id)),
+                    Permission.delete(Role.user(user.$id)),
                 ]
             })
+            //console.log("add croco", data);
+
             getCrocodiles();
         } catch (err) {
             console.log(err.message);
@@ -54,7 +56,7 @@ const CrocoProvider = ({ children }) => {
                 databaseId: DATABASE_ID,
                 rowId: id,
             })
-            console.log("id", resp);
+            //console.log("id", resp);
             return resp;
         } catch (err) {
             console.log(err.message);
@@ -63,20 +65,34 @@ const CrocoProvider = ({ children }) => {
 
     async function deleteCrocoId(id) {
         try {
-
-        } catch (err) {
-            console.log(err.message);
+            //console.log("rowId:", id);
+            const resp = await tablesDb.deleteRow({
+                tableId: TABLE_ID,
+                databaseId: DATABASE_ID,
+                rowId: id,
+            })
+            //console.log("delete");
+            getCrocodiles();
+        }
+        catch (error) {
+            console.log(error.message);
         }
     }
-    
-    async function updateCrocoId(id) {
+
+    async function updateCroco(id, data) {
         try {
-
-        } catch (err) {
-            console.log(err.message);
+            const resp = await tablesDb.updateRow({
+                databaseId: DATABASE_ID,
+                tableId: TABLE_ID,
+                rowId: id,
+                data: data
+            });
+            console.log("Todo was succesfully updated!", resp);
+        }
+        catch (error) {
+            console.log(error.message);
         }
     }
-
     return (
         <>
             <CrocoContext.Provider value={{
@@ -85,7 +101,7 @@ const CrocoProvider = ({ children }) => {
                 getCrocodiles,
                 getCrocoId,
                 deleteCrocoId,
-                updateCrocoId
+                updateCroco,
             }} >
                 {children}
             </CrocoContext.Provider>

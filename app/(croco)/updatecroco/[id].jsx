@@ -1,12 +1,12 @@
 import { Button, Keyboard, TextInput, TouchableWithoutFeedback } from "react-native";
-import ThemedView from "../../components/ThemedView";
-import { useReducer, useState } from "react";
-import ThemedTextInput from "../../components/ThemedTextInput";
-import { Link, useRouter } from "expo-router";
-import { useCrocos } from "../../hooks/UseCrocos";
+import ThemedView from "../../../components/ThemedView";
+import { useEffect, useReducer, useState } from "react";
+import ThemedTextInput from "../../../components/ThemedTextInput";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { useCrocos } from "../../../hooks/UseCrocos";
 
 
-export default function CreateCroco() {
+export default function UpdateCroco() {
     const [Common_Name, set_Common_Name] = useState("");
     const [Family, set_Family] = useState("");
     const [Country_Region, set_Country_Region] = useState("");
@@ -15,10 +15,28 @@ export default function CreateCroco() {
     const [Notes, set_Notes] = useState("");
 
     const router = useRouter();
-    const { createCroco } = useCrocos();
+    const { id } = useLocalSearchParams();
+    //console.log("UpdateCroco id:", id);
+    const { updateCroco, getCrocoId } = useCrocos();
+
+
+    useEffect(() => {
+        async function fetchCroco() {
+            const croco = await getCrocoId(id);
+            if (croco) {
+                set_Common_Name(croco.Common_Name ?? "");
+                set_Family(croco.Family ?? "");
+                set_Country_Region(croco.Country_Region ?? "");
+                set_Age_Class(croco.Age_Class ?? "");
+                set_Sex(croco.Sex ?? "");
+                set_Notes(croco.Notes ?? "");
+            }
+        }
+        fetchCroco();
+    }, [id])
 
     const handleSubmit = async () => {
-        await createCroco({
+        await updateCroco(id, {
             Common_Name,
             Family,
             Country_Region,
@@ -26,14 +44,7 @@ export default function CreateCroco() {
             Sex,
             Notes,
         })
-        set_Common_Name("");
-        set_Family("");
-        set_Country_Region("");
-        set_Age_Class("");
-        set_Sex("");
-        set_Notes("");
-        router.replace("/Crocodiles");
-
+        router.push(`/crocodiles/${id}`);
     }
 
     return (
@@ -70,7 +81,7 @@ export default function CreateCroco() {
                     value={Notes}
                     onChangeText={set_Notes}
                 />
-                <Button title="Додати" onPress={handleSubmit}></Button>
+                <Button title="Оновити" onPress={() => handleSubmit()}></Button>
                 <Link href={"/"}>На головну</Link>
             </ThemedView>
 
